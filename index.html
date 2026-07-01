@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clare Fields — moneyminded</title>
+<meta name="description" content="A two-year record of equity research, competitions, and club leadership.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker__track" id="tickerTrack"></div>
+</div>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Vol. I &nbsp;·&nbsp; Est. Summer 2026</p>
+    <h1 class="title">The Moneyminded Ledger</h1>
+    <p class="tagline">A running record of one analyst-in-training: paper portfolio, competition entries, club work, and what got learned along the way.</p>
+  </header>
+
+  <div class="ledger">
+    <p class="section-label">Table of Contents</p>
+
+    <a class="entry" href="project-1-portfolio/index.html">
+      <span class="entry__num">01</span>
+      <span class="entry__body">
+        <h2>Portfolio &amp; Analysis</h2>
+        <p>A live paper portfolio tracked monthly against the S&amp;P 500, with the reasoning behind every position.</p>
+      </span>
+      <span class="entry__status status-active">Active — Summer 2026</span>
+    </a>
+
+    <a class="entry" href="project-2-competitions/index.html">
+      <span class="entry__num">02</span>
+      <span class="entry__body">
+        <h2>Competitions</h2>
+        <p>Entries and results from the Wharton Global Youth Investment Competition and the SIFMA Stock Market Game.</p>
+      </span>
+      <span class="entry__status status-upcoming">Upcoming</span>
+    </a>
+
+    <a class="entry" href="project-3-club/index.html">
+      <span class="entry__num">03</span>
+      <span class="entry__body">
+        <h2>Club Leadership</h2>
+        <p>Founding a finance club: mission, meeting notes, guest speakers, and membership growth over two school years.</p>
+      </span>
+      <span class="entry__status status-future">11th–12th grade</span>
+    </a>
+
+    <a class="entry" href="project-4-retrospective/index.html">
+      <span class="entry__num">04</span>
+      <span class="entry__body">
+        <h2>Retrospective</h2>
+        <p>A capstone reflection on two years of picks, mistakes, and what it actually taught about judgment.</p>
+      </span>
+      <span class="entry__status status-future">Summer 2027</span>
+    </a>
+  </div>
+
+  <footer>
+    <span>moneyminded.it.com</span>
+    <span>Updated monthly — start with <a href="project-1-portfolio/updates/2026-07-update.html">the July entry</a></span>
+  </footer>
+</div>
+
+<script>
+  // Ticker content is real portfolio data — replace this array as holdings change.
+  const holdings = [
+    { t: "CMG", chg: "+2.1%", up: true },
+    { t: "NKE", chg: "-0.8%", up: false },
+    { t: "SBUX", chg: "+1.4%", up: true },
+    { t: "AAPL", chg: "+0.3%", up: true },
+    { t: "COST", chg: "-1.1%", up: false },
+    { t: "V", chg: "+0.6%", up: true },
+    { t: "DIS", chg: "-0.4%", up: false },
+    { t: "PORTFOLIO", chg: "+3.2% vs S&P", up: true },
+  ];
+  const track = document.getElementById('tickerTrack');
+  const row = holdings.map(h =>
+    `<span><b>${h.t}</b><span class="${h.up ? 'up' : 'down'}">${h.chg}</span></span>`
+  ).join('');
+  track.innerHTML = row + row; // duplicate for seamless loop
+</script>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+/* ============================================================
+   moneyminded.it.com — design tokens
+   Concept: an analyst's field ledger. Navy ink page, brass rule
+   lines, parchment entry cards, tabular mono for every number.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --ink:        #12151c;
+  --ink-soft:   #1b202b;
+  --paper:      #e9e2cb;
+  --paper-dim:  #d9d0b3;
+  --brass:      #c99a3a;
+  --brass-dim:  #8a6c2c;
+  --gain:       #4f7942;
+  --loss:       #a63d40;
+  --text-hi:    #f3efe2;
+  --text-lo:    #a9a693;
+
+  --display: 'Fraunces', serif;
+  --body:    'IBM Plex Sans', sans-serif;
+  --mono:    'IBM Plex Mono', monospace;
+
+  --rule: 1px solid rgba(201,154,58,0.35);
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text-hi);
+  font-family: var(--body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ---------- Ticker strip (signature element) ---------- */
+.ticker {
+  border-bottom: var(--rule);
+  background: var(--ink-soft);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 9px 0;
+}
+.ticker__track {
+  display: inline-flex;
+  animation: scroll-left 38s linear infinite;
+}
+.ticker__track span {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  padding: 0 22px;
+  color: var(--text-lo);
+  border-right: 1px solid rgba(169,166,147,0.25);
+}
+.ticker__track span b { color: var(--text-hi); font-weight: 500; margin-right: 6px; }
+.ticker .up   { color: var(--gain); }
+.ticker .down { color: var(--loss); }
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ---------- Header ---------- */
+header.masthead {
+  padding: 56px 0 30px;
+  border-bottom: 3px double var(--brass-dim);
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin: 0 0 14px;
+}
+h1.title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.02;
+  margin: 0 0 10px;
+  color: var(--text-hi);
+}
+.tagline {
+  font-family: var(--body);
+  font-size: 17px;
+  color: var(--text-lo);
+  margin: 0;
+  max-width: 46ch;
+}
+
+nav.crumbs {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-lo);
+  padding: 18px 0;
+}
+nav.crumbs a { color: var(--brass); text-decoration: none; }
+nav.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- Ledger index (homepage project list) ---------- */
+.ledger {
+  margin: 44px 0 70px;
+}
+.entry {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 20px;
+  align-items: start;
+  padding: 26px 0;
+  border-bottom: var(--rule);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.entry:hover { background: rgba(201,154,58,0.05); }
+.entry__num {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--brass);
+  padding-top: 6px;
+}
+.entry__body h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 25px;
+  margin: 0 0 6px;
+}
+.entry__body p {
+  margin: 0;
+  color: var(--text-lo);
+  font-size: 15px;
+  max-width: 54ch;
+}
+.entry__status {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid;
+  border-radius: var(--radius);
+  height: fit-content;
+  white-space: nowrap;
+}
+.status-active  { color: var(--gain); border-color: var(--gain); }
+.status-upcoming{ color: var(--brass); border-color: var(--brass); }
+.status-future  { color: var(--text-lo); border-color: var(--text-lo); }
+
+/* ---------- Cards / sections ---------- */
+.section-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin: 0 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(201,154,58,0.3);
+}
+
+.card {
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  margin-bottom: 18px;
+}
+.card h3 {
+  font-family: var(--display);
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+.card p { margin: 0; color: #3a3628; font-size: 15px; }
+.card .meta {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--brass-dim);
+  margin-bottom: 10px;
+}
+
+/* ---------- Data table (holdings / performance) ---------- */
+table.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 14px;
+  margin: 20px 0 40px;
+}
+table.ledger-table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass);
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--brass-dim);
+}
+table.ledger-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(201,154,58,0.18);
+  color: var(--text-hi);
+}
+table.ledger-table td.num { text-align: right; }
+.pos { color: var(--gain); }
+.neg { color: var(--loss); }
+
+/* ---------- Journal / post body ---------- */
+.post-meta {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-lo);
+  margin-bottom: 28px;
+}
+.post-body p { font-size: 16px; color: var(--text-hi); max-width: 68ch; }
+.post-body h2 {
+  font-family: var(--display);
+  font-size: 24px;
+  margin-top: 40px;
+}
+
+/* ---------- Placeholder / future project ---------- */
+.placeholder {
+  border: 1px dashed rgba(201,154,58,0.4);
+  border-radius: var(--radius);
+  padding: 40px 28px;
+  text-align: center;
+  color: var(--text-lo);
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+footer {
+  border-top: var(--rule);
+  padding: 34px 0 60px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-lo);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+footer a { color: var(--brass); text-decoration: none; }
+
+@media (max-width: 560px) {
+  .entry { grid-template-columns: 1fr; }
+  .entry__status { justify-self: start; }
+}
