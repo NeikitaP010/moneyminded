@@ -20,9 +20,16 @@
     <p class="tagline">Eight positions, each with a one-line thesis. Full reasoning for new picks lives in the monthly updates.</p>
   </header>
 
+  <div class="live-summary">
+    <div class="label">Live Portfolio Value</div>
+    <div class="value" id="liveTotalValue">Fetching live prices…</div>
+    <div id="liveTotalGain"></div>
+  </div>
+
   <div class="card">
     <div class="meta">CMG — Chipotle Mexican Grill · Featured research pick</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">365 sh @ $35.23 = $12,858.95</p>
+    <p class="live-quote" data-symbol="CMG" data-shares="365" data-cost="12858.95">Fetching live price…</p>
     <h3>The full valuation report</h3>
     <p>New store throughput (Chipotlanes) and pricing power without discounting keep unit economics ahead of the rest of fast casual. Full equity research report and DCF live in the report PDF, linked from the July entry.</p>
   </div>
@@ -30,42 +37,49 @@
   <div class="card">
     <div class="meta">NKE — Nike</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">290 sh @ $44.21 = $12,820.90</p>
+    <p class="live-quote" data-symbol="NKE" data-shares="290" data-cost="12820.90">Fetching live price…</p>
     <p>Direct-to-consumer mix shift and inventory normalization set up a margin recovery story. China demand is the main swing factor to watch.</p>
   </div>
 
   <div class="card">
     <div class="meta">SBUX — Starbucks</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">120 sh @ $104.85 = $12,582.00</p>
+    <p class="live-quote" data-symbol="SBUX" data-shares="120" data-cost="12582.00">Fetching live price…</p>
     <p>New leadership's turnaround plan — store simplification, faster throughput — is a real re-rating case if it works, but traffic trends have to stop slipping first.</p>
   </div>
 
   <div class="card">
     <div class="meta">MCD — McDonald's</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">46 sh @ $274.57 = $12,630.22</p>
+    <p class="live-quote" data-symbol="MCD" data-shares="46" data-cost="12630.22">Fetching live price…</p>
     <p>Held as the comp for CMG and SBUX: a mature, franchise-heavy model that's a useful benchmark for unit economics and margin structure.</p>
   </div>
 
   <div class="card">
     <div class="meta">AAPL — Apple</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">43 sh @ $306.45 = $13,177.35</p>
+    <p class="live-quote" data-symbol="AAPL" data-shares="43" data-cost="13177.35">Fetching live price…</p>
     <p>Services keep expanding operating margin even as hardware growth flattens. The large-cap anchor of the book — held for stability more than upside.</p>
   </div>
 
   <div class="card">
     <div class="meta">COST — Costco</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">14 sh @ $941.03 = $13,174.42</p>
+    <p class="live-quote" data-symbol="COST" data-shares="14" data-cost="13174.42">Fetching live price…</p>
     <p>Membership renewal rates and steady comps make this the "boring compounder" position — low drama, consistent execution.</p>
   </div>
 
   <div class="card">
     <div class="meta">V — Visa</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">36 sh @ $358.46 = $12,904.56</p>
+    <p class="live-quote" data-symbol="V" data-shares="36" data-cost="12904.56">Fetching live price…</p>
     <p>Network-effect economics on payments volume, with very little direct credit risk. A bet on the continued shift away from cash generally.</p>
   </div>
 
   <div class="card">
     <div class="meta">DIS — Disney</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">130 sh @ $97.18 = $12,633.40</p>
+    <p class="live-quote" data-symbol="DIS" data-shares="130" data-cost="12633.40">Fetching live price…</p>
     <p>Streaming profitability inflection plus parks pricing power make the bull case, but content spend cycles and segment complexity are real risks.</p>
   </div>
 
@@ -81,5 +95,6 @@
   </footer>
 </div>
 
+<script src="../../assets/live-quotes.js"></script>
 </body>
 </html>

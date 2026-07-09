@@ -232,6 +232,44 @@ table.ledger-table td.num { text-align: right; }
 .pos { color: var(--gain); }
 .neg { color: var(--loss); }
 
+/* ---------- Live price tracker ---------- */
+.live-summary {
+  font-family: var(--mono);
+  font-size: 14px;
+  background: var(--ink-soft);
+  border: var(--rule);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 20px 0;
+}
+.live-summary .label {
+  color: var(--text-lo);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.live-summary .value { font-size: 20px; }
+.live-quote {
+  font-family: var(--mono);
+  font-size: 13px;
+  margin: 2px 0 10px;
+  color: var(--text-lo);
+}
+.live-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gain);
+  border: 1px solid var(--gain);
+  border-radius: var(--radius);
+  padding: 2px 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 /* ---------- Journal / post body ---------- */
 .post-meta {
   font-family: var(--mono);

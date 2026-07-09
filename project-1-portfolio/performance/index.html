@@ -31,6 +31,13 @@
       </tr>
     </thead>
     <tbody>
+      <tr id="liveRow">
+        <td>Live Now <span class="live-badge">● Live</span></td>
+        <td class="num" id="liveValue">Fetching…</td>
+        <td class="num" id="livePortfolioReturn">—</td>
+        <td class="num" id="liveSpxReturn">—</td>
+        <td class="num" id="liveDelta">—</td>
+      </tr>
       <tr>
         <td>Week of Jul 9, 2026</td>
         <td class="num">$102,781.80</td>
@@ -63,7 +70,9 @@
   </table>
 
   <p class="post-body" style="color:var(--text-lo); font-size:14px;">
-    Week of Jul 9 is the opening snapshot — day one, all eight positions bought
+    The "Live Now" row refreshes on every page load — unlike the fixed weekly
+    snapshots below it, it isn't a recorded data point. Week of Jul 9 is the
+    opening snapshot — day one, all eight positions bought
     at once, so return is flat by definition. S&amp;P 500 closed at 7,543.64
     that week. "Pending" rows fill in each following week. Once there are 3+
     real data points, this table can be swapped for a simple line chart
@@ -75,6 +84,10 @@
     <strong>How the columns are calculated:</strong> Portfolio Return = (current
     value − $102,781.80) / $102,781.80. S&amp;P 500 Return = (current S&amp;P
     level − 7,543.64) / 7,543.64. Delta = Portfolio Return − S&amp;P 500 Return.
+    The "Live Now" row uses SPY (an ETF tracking the S&amp;P 500) as a stand-in
+    for the index, since real-time index levels aren't available on the free
+    API tier — its S&amp;P 500 Return is (current SPY price − $751.16) / $751.16,
+    SPY's close on July 9, 2026.
   </p>
 
   <footer>
@@ -83,5 +96,6 @@
   </footer>
 </div>
 
+<script src="../../assets/live-quotes.js"></script>
 </body>
 </html>
