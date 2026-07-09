@@ -17,13 +17,13 @@
   <header class="masthead" style="padding-top:20px; border-bottom:none;">
     <p class="eyebrow">Running Tracker</p>
     <h1 class="title" style="font-size:clamp(28px,5vw,42px);">Performance vs. S&amp;P 500</h1>
-    <p class="tagline">Updated alongside each monthly entry. Starting value: $102,781.80 (July 2026).</p>
+    <p class="tagline">Updated weekly. Starting value: $102,781.80 (July 2026).</p>
   </header>
 
   <table class="ledger-table">
     <thead>
       <tr>
-        <th>Month</th>
+        <th>Week</th>
         <th>Portfolio Value</th>
         <th>Portfolio Return</th>
         <th>S&amp;P 500 Return</th>
@@ -32,21 +32,28 @@
     </thead>
     <tbody>
       <tr>
-        <td>Jul 2026</td>
+        <td>Week of Jul 9, 2026</td>
         <td class="num">$102,781.80</td>
         <td class="num">0.0%</td>
         <td class="num">0.0%</td>
         <td class="num">0.0%</td>
       </tr>
       <tr>
-        <td>Aug 2026</td>
+        <td>Week of Jul 16, 2026</td>
         <td class="num">pending</td>
         <td class="num">pending</td>
         <td class="num">pending</td>
         <td class="num">pending</td>
       </tr>
       <tr>
-        <td>Sep 2026</td>
+        <td>Week of Jul 23, 2026</td>
+        <td class="num">pending</td>
+        <td class="num">pending</td>
+        <td class="num">pending</td>
+        <td class="num">pending</td>
+      </tr>
+      <tr>
+        <td>Week of Jul 30, 2026</td>
         <td class="num">pending</td>
         <td class="num">pending</td>
         <td class="num">pending</td>
@@ -56,11 +63,18 @@
   </table>
 
   <p class="post-body" style="color:var(--text-lo); font-size:14px;">
-    July is the opening snapshot — day one, all eight positions bought at once,
-    so return is flat by definition. "Pending" rows fill in on the first of each
-    following month. Once there are 3+ real data points, this table can be
-    swapped for a simple line chart (portfolio vs. benchmark) using the same
-    numbers — the row structure above is already shaped for that.
+    Week of Jul 9 is the opening snapshot — day one, all eight positions bought
+    at once, so return is flat by definition. S&amp;P 500 closed at 7,543.64
+    that week. "Pending" rows fill in each following week. Once there are 3+
+    real data points, this table can be swapped for a simple line chart
+    (portfolio vs. benchmark) using the same numbers — the row structure above
+    is already shaped for that.
+  </p>
+
+  <p class="post-body" style="color:var(--text-lo); font-size:14px;">
+    <strong>How the columns are calculated:</strong> Portfolio Return = (current
+    value − $102,781.80) / $102,781.80. S&amp;P 500 Return = (current S&amp;P
+    level − 7,543.64) / 7,543.64. Delta = Portfolio Return − S&amp;P 500 Return.
   </p>
 
   <footer>
