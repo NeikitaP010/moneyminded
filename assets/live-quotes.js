@@ -3,7 +3,7 @@
 // server-side proxy or env var instead of shipping it in client-side JS —
 // fine for now since it's a free, read-only key on a low-traffic personal
 // project, but it is visible to anyone who views source.
-const FINNHUB_API_KEY = "d982muhr01qng2nq9t60d982muhr01qng2nq9t6g";
+const FINNHUB_API_KEY = "d982uu9r01qng2nqb2v0d982uu9r01qng2nqb2vg";
 
 const POSITIONS = [
   { symbol: "CMG",  shares: 365, cost: 12858.95 },
