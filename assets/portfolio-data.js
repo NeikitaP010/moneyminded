@@ -83,6 +83,11 @@ const POSITIONS = Object.entries(STOCKS).map(([symbol, s]) => ({
 // Cost basis of the whole book on day one (sum of the costs above).
 const BASELINE_TOTAL = 102781.80;
 
+// Cash deposited to open the book. It funded the 8 opening buys, so recorded
+// cash today derives to $0 (INITIAL_CASH − opening buy costs). The rebalance
+// tool recomputes available cash from this plus the TRADES log.
+const INITIAL_CASH = 102781.80;
+
 // SPY's close on the baseline day (Jul 9, 2026), used as the S&P 500 proxy.
 const SPY_BASELINE = 751.16;
 

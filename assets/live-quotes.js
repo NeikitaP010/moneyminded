@@ -601,6 +601,193 @@ function escapeHtml(str) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+// ---------- Rebalance / trade tool ----------
+// Client-side only: stages trades in localStorage with live cash validation,
+// then exports them to be committed into the canonical data (TRADES + STOCKS).
+// Cash and holdings are recomputed on every action so nothing can be bought
+// without the money to cover it.
+
+const PENDING_KEY = "mm_pending_trades_v1";
+
+function loadPending() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(PENDING_KEY) || "[]");
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+function savePending(list) {
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(list)); } catch (e) { /* ignore */ }
+}
+
+// Cash implied by the recorded trade log (the opening buys were funded by
+// INITIAL_CASH, so this is $0 until a sell is recorded).
+function recordedCash() {
+  let cash = typeof INITIAL_CASH === "number" ? INITIAL_CASH : 0;
+  (typeof TRADES !== "undefined" ? TRADES : []).forEach(t => {
+    const amt = t.shares * t.price;
+    cash += t.action === "SELL" ? amt : -amt;
+  });
+  return cash;
+}
+
+// Apply the pending (un-synced) trades on top of the recorded state.
+function projectedState(pending) {
+  const holdings = {};
+  Object.entries(STOCKS).forEach(([sym, s]) => { holdings[sym] = s.shares; });
+  let cash = recordedCash();
+  pending.forEach(t => {
+    const amt = t.shares * t.price;
+    if (t.action === "SELL") { holdings[t.symbol] = (holdings[t.symbol] || 0) - t.shares; cash += amt; }
+    else { holdings[t.symbol] = (holdings[t.symbol] || 0) + t.shares; cash -= amt; }
+  });
+  return { holdings, cash };
+}
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function initTradeTool() {
+  const root = document.getElementById("tradeTool");
+  if (!root) return;
+
+  const $ = s => document.getElementById(s);
+  let pending = loadPending();
+
+  function setMsg(el, text, kind) {
+    el.textContent = text;
+    el.className = "trade-msg" + (kind ? " " + kind : "");
+  }
+
+  function render() {
+    const { holdings, cash } = projectedState(pending);
+
+    $("cashAvail").textContent = fmtUSD(cash);
+
+    // Sell dropdown: only symbols still held (after pending).
+    const held = Object.keys(holdings).filter(s => holdings[s] > 0).sort();
+    const prev = $("sellSymbol").value;
+    $("sellSymbol").innerHTML = held.length
+      ? held.map(s => `<option value="${s}">${s} · ${holdings[s]} sh</option>`).join("")
+      : `<option value="">— nothing to sell —</option>`;
+    if (held.includes(prev)) $("sellSymbol").value = prev;
+
+    // Pending list.
+    if (!pending.length) {
+      $("pendingList").innerHTML = `<p class="post-body" style="color:var(--text-lo);font-size:14px;">No staged trades yet.</p>`;
+      $("syncRow").hidden = true;
+    } else {
+      $("pendingList").innerHTML = pending.map((t, i) => {
+        const cls = t.action === "SELL" ? "sell" : "buy";
+        return `<div class="pending-item">
+          <span class="trade__action ${cls}">${t.action}</span>
+          <span>${t.symbol}</span>
+          <span style="color:var(--text-lo)">${t.shares} sh @ ${fmtUSD(t.price)} = ${fmtUSD(t.shares * t.price)}</span>
+          <button class="rm" data-i="${i}" title="Remove">✕</button>
+        </div>`;
+      }).join("");
+      $("syncRow").hidden = false;
+    }
+    $("cashAvail").classList.toggle("neg", cash < 0);
+  }
+
+  // Prefill live price when the sell symbol changes.
+  $("sellSymbol").addEventListener("change", () => {
+    const sym = $("sellSymbol").value;
+    if (!sym) return;
+    fetchQuote(sym).then(q => { $("sellPrice").value = q.c.toFixed(2); }).catch(() => {});
+  });
+  // Fire once to prefill initial selection.
+  if ($("sellSymbol").value) $("sellSymbol").dispatchEvent(new Event("change"));
+
+  // Prefill live price when a buy ticker is entered.
+  $("buySymbol").addEventListener("change", () => {
+    const sym = $("buySymbol").value.trim().toUpperCase();
+    $("buySymbol").value = sym;
+    if (!sym) return;
+    fetchQuote(sym)
+      .then(q => { $("buyPrice").value = q.c.toFixed(2); setMsg($("buyMsg"), `Live price for ${sym}: ${fmtUSD(q.c)}`, "ok"); })
+      .catch(() => setMsg($("buyMsg"), `Couldn't fetch a live price for ${sym} — check the ticker or enter the price manually.`, "error"));
+  });
+
+  // Stage a sell.
+  $("sellForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const sym = $("sellSymbol").value;
+    const shares = parseInt($("sellShares").value, 10);
+    const price = parseFloat($("sellPrice").value);
+    const { holdings } = projectedState(pending);
+    const held = holdings[sym] || 0;
+
+    if (!sym) return setMsg($("sellMsg"), "Nothing to sell.", "error");
+    if (!Number.isInteger(shares) || shares <= 0) return setMsg($("sellMsg"), "Enter a whole number of shares.", "error");
+    if (shares > held) return setMsg($("sellMsg"), `You only hold ${held} share(s) of ${sym}.`, "error");
+    if (!(price > 0)) return setMsg($("sellMsg"), "Enter a valid price.", "error");
+
+    pending.push({ date: todayISO(), action: "SELL", symbol: sym, shares, price });
+    savePending(pending);
+    setMsg($("sellMsg"), `Staged: SELL ${shares} ${sym} @ ${fmtUSD(price)} (frees ${fmtUSD(shares * price)}).`, "ok");
+    $("sellShares").value = "";
+    render();
+  });
+
+  // Stage a buy.
+  $("buyForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const sym = $("buySymbol").value.trim().toUpperCase();
+    const shares = parseInt($("buyShares").value, 10);
+    const price = parseFloat($("buyPrice").value);
+    const { cash } = projectedState(pending);
+    const cost = shares * price;
+
+    if (!sym) return setMsg($("buyMsg"), "Enter a ticker to buy.", "error");
+    if (!Number.isInteger(shares) || shares <= 0) return setMsg($("buyMsg"), "Enter a whole number of shares.", "error");
+    if (!(price > 0)) return setMsg($("buyMsg"), "Enter a valid price.", "error");
+    if (cost > cash) return setMsg($("buyMsg"), `That costs ${fmtUSD(cost)} but you only have ${fmtUSD(cash)} available. Sell a position first to free up cash.`, "error");
+
+    pending.push({ date: todayISO(), action: "BUY", symbol: sym, shares, price });
+    savePending(pending);
+    setMsg($("buyMsg"), `Staged: BUY ${shares} ${sym} @ ${fmtUSD(price)} (costs ${fmtUSD(cost)}).`, "ok");
+    $("buySymbol").value = ""; $("buyShares").value = ""; $("buyPrice").value = "";
+    render();
+  });
+
+  // Remove a pending trade.
+  $("pendingList").addEventListener("click", e => {
+    const btn = e.target.closest(".rm");
+    if (!btn) return;
+    pending.splice(parseInt(btn.dataset.i, 10), 1);
+    savePending(pending);
+    render();
+  });
+
+  // Export for syncing.
+  $("copyTrades").addEventListener("click", () => {
+    const out = JSON.stringify(pending, null, 2);
+    $("syncOutput").value = out;
+    $("syncOutput").hidden = false;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(out)
+        .then(() => setMsg($("syncMsg"), "Copied to clipboard — export these with your reasoning to record them permanently.", "ok"))
+        .catch(() => setMsg($("syncMsg"), "Select the text below and copy it to record these trades permanently.", "ok"));
+    } else {
+      setMsg($("syncMsg"), "Select the text below and copy it to record these trades permanently.", "ok");
+    }
+  });
+
+  // Clear after syncing.
+  $("clearPending").addEventListener("click", () => {
+    if (!pending.length) return;
+    if (!window.confirm("Clear all staged trades? Do this only after they've been recorded permanently.")) return;
+    pending = [];
+    savePending(pending);
+    $("syncOutput").hidden = true;
+    $("syncOutput").value = "";
+    setMsg($("syncMsg"), "Cleared.", "ok");
+    render();
+  });
+
+  render();
+}
+
 // ---------- Boot ----------
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -609,4 +796,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initStockDetail();
   initJournal();
   initScorecard();
+  initTradeTool();
 });

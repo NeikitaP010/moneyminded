@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebalance — Portfolio &amp; Analysis · moneyminded</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs">
+    <a href="../../index.html">moneyminded</a> /
+    <a href="../index.html">project-1-portfolio</a> / rebalance
+  </nav>
+
+  <header class="masthead" style="padding-top:20px; border-bottom:none;">
+    <p class="eyebrow">Rebalance</p>
+    <h1 class="title" style="font-size:clamp(28px,5vw,42px);">Sell &amp; Reinvest</h1>
+    <p class="tagline">Stage trades here when a position stops making sense. Cash is validated on every action — you can't spend money you don't have. Staged trades are saved in this browser, then exported to be recorded permanently across the site.</p>
+  </header>
+
+  <div id="tradeTool">
+    <div class="cash-bar">
+      <span class="cash-label">Available Cash</span>
+      <span id="cashAvail" class="cash-num">$0.00</span>
+      <span class="cash-hint">Fully invested at the open — sell a position to free up cash before you can buy. "Available" already includes any staged sells below.</span>
+    </div>
+
+    <p class="section-label">Sell a Position</p>
+    <form id="sellForm" class="trade-form">
+      <div class="trade-field">
+        <label for="sellSymbol">Holding</label>
+        <select id="sellSymbol"></select>
+      </div>
+      <div class="trade-field narrow">
+        <label for="sellShares">Shares</label>
+        <input id="sellShares" type="number" min="1" step="1" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="trade-field narrow">
+        <label for="sellPrice">Price</label>
+        <input id="sellPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00">
+      </div>
+      <button class="btn" type="submit">Stage Sell</button>
+    </form>
+    <p id="sellMsg" class="trade-msg"></p>
+
+    <p class="section-label" style="margin-top:28px;">Buy a Position</p>
+    <form id="buyForm" class="trade-form">
+      <div class="trade-field narrow">
+        <label for="buySymbol">Ticker</label>
+        <input id="buySymbol" type="text" autocapitalize="characters" placeholder="e.g. PEP">
+      </div>
+      <div class="trade-field narrow">
+        <label for="buyShares">Shares</label>
+        <input id="buyShares" type="number" min="1" step="1" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="trade-field narrow">
+        <label for="buyPrice">Price</label>
+        <input id="buyPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00">
+      </div>
+      <button class="btn" type="submit">Stage Buy</button>
+    </form>
+    <p id="buyMsg" class="trade-msg"></p>
+
+    <p class="section-label" style="margin-top:28px;">Staged Trades</p>
+    <div id="pendingList"></div>
+
+    <div id="syncRow" class="sync-row" hidden>
+      <button id="copyTrades" class="btn">Copy staged trades</button>
+      <button id="clearPending" class="btn btn--ghost">Clear staged trades</button>
+    </div>
+    <p id="syncMsg" class="trade-msg"></p>
+    <textarea id="syncOutput" class="sync-box" readonly hidden></textarea>
+
+    <p class="post-body" style="color:var(--text-lo); font-size:13px; margin-top:22px; border-top:var(--rule); padding-top:16px;">
+      Staged trades are saved in this browser only. Use <em>Copy staged trades</em>
+      to export them for permanent recording into the journal, holdings, and
+      scorecard, then <em>Clear staged trades</em> once they've been recorded.
+    </p>
+  </div>
+
+  <footer>
+    <span><a href="../index.html">← Back to Project 1</a></span>
+    <span><a href="../holdings/index.html">View holdings →</a></span>
+  </footer>
+</div>
+
+<script src="../../assets/portfolio-data.js"></script>
+<script src="../../assets/live-quotes.js"></script>
+</body>
+</html>
