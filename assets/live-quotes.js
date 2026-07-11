@@ -389,6 +389,52 @@ function renderGrowthChart(portfolioValue, spyNow) {
     <p class="chart-note">Growth of $100 invested on ${base.label}. Both lines start at 100; the “Now” point updates live on each page load.</p>`;
 }
 
+// ---------- Thesis scorecard ----------
+
+const SCORE_STATUS = {
+  open:      { label: "Open · too early", cls: "open" },
+  holding:   { label: "On track",         cls: "good" },
+  confirmed: { label: "Confirmed",        cls: "good" },
+  broke:     { label: "Broke",            cls: "bad" },
+};
+
+function initScorecard() {
+  const el = document.getElementById("scorecard");
+  if (!el) return;
+
+  // Tally statuses for the summary line.
+  const counts = { open: 0, holding: 0, confirmed: 0, broke: 0 };
+  Object.values(STOCKS).forEach(s => { counts[s.status] = (counts[s.status] || 0) + 1; });
+  const tallyEl = document.getElementById("scoreTally");
+  if (tallyEl) {
+    tallyEl.innerHTML = `
+      <div class="stat"><div class="k">Theses Tracked</div><div class="v">${Object.keys(STOCKS).length}</div></div>
+      <div class="stat"><div class="k">On Track</div><div class="v">${counts.holding + counts.confirmed}</div></div>
+      <div class="stat"><div class="k">Broke</div><div class="v">${counts.broke}</div></div>
+      <div class="stat"><div class="k">Still Open</div><div class="v">${counts.open}</div></div>`;
+  }
+
+  el.innerHTML = Object.entries(STOCKS).map(([symbol, s]) => {
+    const st = SCORE_STATUS[s.status] || SCORE_STATUS.open;
+    const verdict = s.status === "open"
+      ? "Tracking — bought Jul 9, 2026. Too early to judge; the verdict lands when the thesis is tested."
+      : escapeHtml(s.lesson || "Resolved.");
+    const lesson = s.lesson ? escapeHtml(s.lesson) : "Fills in once the thesis resolves.";
+    return `
+      <div class="score">
+        <div class="score__head">
+          <a class="score__symbol" href="holdings/stock.html?symbol=${symbol}">${symbol}</a>
+          <span class="score__name">${escapeHtml(s.name)}</span>
+          <span class="score__status ${st.cls}">${st.label}</span>
+        </div>
+        <div class="score__row"><span class="score__k">Thesis</span><span class="score__v">${escapeHtml(s.thesis)}</span></div>
+        <div class="score__row"><span class="score__k">Risk named at entry</span><span class="score__v">${escapeHtml(s.risk)}</span></div>
+        <div class="score__row"><span class="score__k">Verdict</span><span class="score__v">${verdict}</span></div>
+        <div class="score__row"><span class="score__k">Lesson</span><span class="score__v">${lesson}</span></div>
+      </div>`;
+  }).join("");
+}
+
 // ---------- Trade journal ----------
 
 const MONTHS = ["January", "February", "March", "April", "May", "June",
@@ -542,4 +588,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initPerformancePage();
   initStockDetail();
   initJournal();
+  initScorecard();
 });
