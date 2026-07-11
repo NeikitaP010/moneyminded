@@ -117,8 +117,6 @@ const TRADES = [
     rationale: "The highest-conviction, highest-risk pick. Bought on the streaming-profitability inflection plus parks pricing power, aware it's the hardest of the eight to model cleanly." },
 ];
 
-// Dividends actually received, appended as each quarterly payment lands.
-// Empty until the first pay date passes (positions opened 2026-07-09). Add a
-// line per payment:  { date: "2026-08-14", symbol: "AAPL", shares: 43, perShare: 0.26 }
-const DIVIDENDS = [
-];
+// Dividends actually received now live in assets/dividends.json, appended
+// automatically each month by the scheduled GitHub Action (scripts/dividends.mjs)
+// and read by the dividends page. Nothing to edit here.

@@ -683,19 +683,34 @@ function renderDividends(metrics) {
   }
 }
 
-// Actual dividends received to date (from the DIVIDENDS log), newest first,
-// with a running total. Renders regardless of the live API.
+// Actual dividends received to date, read from assets/dividends.json (appended
+// monthly by the GitHub Action). Newest first, with a running total and an
+// "auto-checked" stamp that only advances when the fetch succeeds.
 function renderReceivedDividends() {
   const el = document.getElementById("dividendsReceived");
   if (!el) return;
-  const list = typeof DIVIDENDS !== "undefined" ? DIVIDENDS : [];
+
+  fetch(`${ASSETS_BASE}dividends.json`)
+    .then(res => (res.ok ? res.json() : Promise.reject(new Error(res.status))))
+    .then(data => paintReceived(el, Array.isArray(data.dividends) ? data.dividends : [], data.lastChecked || null))
+    .catch(() => paintReceived(el, [], null, true));
+}
+
+function paintReceived(el, list, lastChecked, error) {
   const total = list.reduce((sum, d) => sum + d.shares * d.perShare, 0);
 
   const totalEl = document.getElementById("receivedTotal");
   if (totalEl) totalEl.textContent = fmtUSD(total);
 
+  const stampEl = document.getElementById("divAutoChecked");
+  if (stampEl) {
+    stampEl.textContent = error
+      ? "Auto-check: couldn't load the dividend log."
+      : lastChecked ? `Auto-checked ${formatTradeDate(lastChecked)}` : "Auto-check: not yet run.";
+  }
+
   if (!list.length) {
-    el.innerHTML = `<p class="post-body" style="color:var(--text-lo); font-size:14px;">No dividends received yet — the first payments will appear here as pay dates pass. Positions opened Jul 9, 2026.</p>`;
+    el.innerHTML = `<p class="post-body" style="color:var(--text-lo); font-size:14px;">No dividends received yet — the first payments will appear here as ex-dates pass. Positions opened Jul 9, 2026.</p>`;
     return;
   }
 
@@ -709,7 +724,7 @@ function renderReceivedDividends() {
     </tr>`).join("");
 
   el.innerHTML = `<div class="table-scroll"><table class="ledger-table">
-      <thead><tr><th>Pay Date</th><th>Ticker</th><th class="num">Shares</th><th class="num">Per Share</th><th class="num">Amount</th></tr></thead>
+      <thead><tr><th>Ex-Date</th><th>Ticker</th><th class="num">Shares</th><th class="num">Per Share</th><th class="num">Amount</th></tr></thead>
       <tbody>${rows}</tbody>
       <tfoot><tr><td>Total</td><td></td><td class="num"></td><td class="num"></td><td class="num pos">${fmtUSD(total)}</td></tr></tfoot>
     </table></div>`;

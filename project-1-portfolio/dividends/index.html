@@ -58,11 +58,14 @@
   <p class="section-label" style="margin-top:36px;">Dividends Received</p>
   <div class="journal-stats">
     <div class="stat"><div class="k">Received to Date</div><div class="v" id="receivedTotal">$0.00</div></div>
+    <div class="stat"><div class="k">Status</div><div class="v" id="divAutoChecked" style="font-size:14px;">…</div></div>
   </div>
   <div id="dividendsReceived"></div>
   <p class="post-body" style="color:var(--text-lo); font-size:13px; margin-top:14px;">
-    The actual-cash record: each payment is logged here as it lands, building a
-    real income history alongside the forward estimate above.
+    The actual-cash record, updated automatically each month. Each dividend is
+    logged by its ex-date (cash arrives on the pay date a few weeks later). The
+    "Auto-checked" date advances each time the monthly fetch runs — if it stops
+    advancing, the fetch needs a look.
   </p>
 
   <footer>
