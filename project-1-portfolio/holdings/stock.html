@@ -17,26 +17,26 @@
 
   <div id="stockDetail">
     <header class="masthead" style="padding-top:20px; border-bottom:none;">
-      <p class="eyebrow"><span id="sdSector">…</span> · <span class="live-badge">● Live</span></p>
-      <h1 class="title" style="font-size:clamp(28px,5vw,42px);"><span id="sdName">…</span></h1>
-      <p class="tagline" id="sdPosition">…</p>
+      <p class="eyebrow"><span id="sdSector"><span class="skeleton skeleton--sm"></span></span> · <span class="live-badge">● Live</span></p>
+      <h1 class="title" style="font-size:clamp(28px,5vw,42px);"><span id="sdName"><span class="skeleton skeleton--lg"></span></span></h1>
+      <p class="tagline" id="sdPosition"><span class="skeleton skeleton--md"></span></p>
     </header>
 
     <div class="sd-quote">
-      <div><div class="k">Last Price</div><div class="v" id="sdPrice">…</div></div>
-      <div><div class="k">Today</div><div class="v" id="sdDayChange">…</div></div>
-      <div><div class="k">Position Value</div><div class="v" id="sdValue">…</div></div>
-      <div><div class="k">Total Return</div><div class="v" id="sdTotalGain">…</div></div>
+      <div><div class="k">Last Price</div><div class="v" id="sdPrice"><span class="skeleton skeleton--sm"></span></div></div>
+      <div><div class="k">Today</div><div class="v" id="sdDayChange"><span class="skeleton skeleton--sm"></span></div></div>
+      <div><div class="k">Position Value</div><div class="v" id="sdValue"><span class="skeleton skeleton--sm"></span></div></div>
+      <div><div class="k">Total Return</div><div class="v" id="sdTotalGain"><span class="skeleton skeleton--sm"></span></div></div>
     </div>
 
     <p class="section-label">Key Metrics</p>
     <div class="metric-grid">
-      <div class="metric"><div class="k">52-Week Range</div><div class="v" id="mRange">…</div></div>
-      <div class="metric"><div class="k">P/E (TTM)</div><div class="v" id="mPE">…</div></div>
-      <div class="metric"><div class="k">Net Margin</div><div class="v" id="mMargin">…</div></div>
-      <div class="metric"><div class="k">Beta</div><div class="v" id="mBeta">…</div></div>
-      <div class="metric"><div class="k">Market Cap</div><div class="v" id="mCap">…</div></div>
-      <div class="metric"><div class="k">Div. Yield</div><div class="v" id="mYield">…</div></div>
+      <div class="metric"><div class="k">52-Week Range</div><div class="v" id="mRange"><span class="skeleton skeleton--sm"></span></div></div>
+      <div class="metric"><div class="k">P/E (TTM)</div><div class="v" id="mPE"><span class="skeleton skeleton--sm"></span></div></div>
+      <div class="metric"><div class="k">Net Margin</div><div class="v" id="mMargin"><span class="skeleton skeleton--sm"></span></div></div>
+      <div class="metric"><div class="k">Beta</div><div class="v" id="mBeta"><span class="skeleton skeleton--sm"></span></div></div>
+      <div class="metric"><div class="k">Market Cap</div><div class="v" id="mCap"><span class="skeleton skeleton--sm"></span></div></div>
+      <div class="metric"><div class="k">Div. Yield</div><div class="v" id="mYield"><span class="skeleton skeleton--sm"></span></div></div>
     </div>
     <p class="post-body" style="color:var(--text-lo); font-size:13px; margin-top:-24px;">
       Metrics pulled live from Finnhub's basic financials; a “—” means the field
@@ -45,12 +45,16 @@
 
     <p class="section-label">My Take</p>
     <div class="post-body">
-      <p><strong>Thesis:</strong> <span id="sdThesis">…</span></p>
-      <p id="sdTake">…</p>
+      <p><strong>Thesis:</strong> <span id="sdThesis"><span class="skeleton skeleton--md"></span></span></p>
+      <p id="sdTake"><span class="skeleton skeleton--md"></span></p>
     </div>
 
     <p class="section-label">Recent Headlines</p>
-    <div id="sdNews" class="news-list">Fetching recent news…</div>
+    <div id="sdNews" class="news-list">
+      <span class="skeleton skeleton--bar"></span>
+      <span class="skeleton skeleton--bar"></span>
+      <span class="skeleton skeleton--bar"></span>
+    </div>
   </div>
 
   <footer>

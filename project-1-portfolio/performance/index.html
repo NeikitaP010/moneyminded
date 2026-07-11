@@ -21,7 +21,7 @@
   </header>
 
   <p class="section-label">Growth of $100 · Portfolio vs. S&amp;P 500</p>
-  <div id="growthChart" class="chart">Loading chart…</div>
+  <div id="growthChart" class="chart"><span class="skeleton" style="display:block;height:300px;border-radius:var(--radius);"></span></div>
 
   <table class="ledger-table">
     <thead>
@@ -36,10 +36,10 @@
     <tbody>
       <tr id="liveRow">
         <td>Live Now <span class="live-badge">● Live</span></td>
-        <td class="num" id="liveValue">Fetching…</td>
-        <td class="num" id="livePortfolioReturn">—</td>
-        <td class="num" id="liveSpxReturn">—</td>
-        <td class="num" id="liveDelta">—</td>
+        <td class="num" id="liveValue"><span class="skeleton skeleton--sm"></span></td>
+        <td class="num" id="livePortfolioReturn"><span class="skeleton skeleton--sm"></span></td>
+        <td class="num" id="liveSpxReturn"><span class="skeleton skeleton--sm"></span></td>
+        <td class="num" id="liveDelta"><span class="skeleton skeleton--sm"></span></td>
       </tr>
       <tr>
         <td>Week of Jul 9, 2026</td>
