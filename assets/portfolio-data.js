@@ -86,13 +86,9 @@ const BASELINE_TOTAL = 102781.80;
 // SPY's close on the baseline day (Jul 9, 2026), used as the S&P 500 proxy.
 const SPY_BASELINE = 751.16;
 
-// Weekly snapshots for the performance chart. One entry per recorded week —
-// add a line each week with that week's portfolio value and SPY close. The
-// chart normalizes both series to 100 at the first entry (growth of $100).
-const SNAPSHOTS = [
-  { label: "Jul 9", portfolio: 102781.80, spy: 751.16 },
-  // { label: "Jul 16", portfolio: 0, spy: 0 },
-];
+// Weekly performance snapshots now live in assets/snapshots.json, appended
+// automatically each week by the scheduled GitHub Action (scripts/snapshot.mjs)
+// and read by the growth chart. Nothing to edit here.
 
 // Trade journal — every buy/sell with the reasoning behind it, newest first
 // on the page. Append a line per trade; action is "BUY" or "SELL". This is the

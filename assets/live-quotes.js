@@ -1,6 +1,6 @@
 // Live quotes via the Finnhub free API (read-only). Depends on the globals
 // defined in portfolio-data.js (STOCKS, POSITIONS, BASELINE_TOTAL,
-// SPY_BASELINE, SNAPSHOTS), so that file must be loaded first.
+// SPY_BASELINE, TRADES), so that file must be loaded first.
 //
 // TODO: if this site gets real traffic, move the key behind a small
 // server-side proxy or env var instead of shipping it in client-side JS —
@@ -9,6 +9,25 @@
 const FINNHUB_API_KEY = "d982uu9r01qng2nqb2v0d982uu9r01qng2nqb2vg";
 
 const FINNHUB_BASE = "https://finnhub.io/api/v1";
+
+// Absolute base URL of the /assets directory, derived from this script's own
+// src so data files resolve correctly from any page depth.
+const ASSETS_BASE = (function () {
+  const s = document.currentScript;
+  return s ? s.src.replace(/[^/]*$/, "") : "";
+})();
+
+// Weekly performance snapshots, appended by the scheduled GitHub Action
+// (scripts/snapshot.mjs) into assets/snapshots.json. Falls back to the day-one
+// baseline if the file can't be read.
+function fetchSnapshots() {
+  return fetch(`${ASSETS_BASE}snapshots.json`)
+    .then(res => (res.ok ? res.json() : Promise.reject(new Error(res.status))))
+    .then(data => (Array.isArray(data.snapshots) && data.snapshots.length
+      ? data.snapshots
+      : [{ date: "2026-07-09", label: "Jul 9", portfolio: BASELINE_TOTAL, spy: SPY_BASELINE }]))
+    .catch(() => [{ date: "2026-07-09", label: "Jul 9", portfolio: BASELINE_TOTAL, spy: SPY_BASELINE }]);
+}
 
 // ---------- Fetch helpers ----------
 
@@ -292,12 +311,13 @@ function initPerformancePage() {
   Promise.all([
     Promise.all(symbols.map(s => fetchQuote(s).then(q => q.c * STOCKS[s].shares).catch(() => null))),
     fetchQuote("SPY").then(q => q.c).catch(() => null),
-  ]).then(([values, spyNow]) => {
+    chartEl ? fetchSnapshots() : Promise.resolve(null),
+  ]).then(([values, spyNow, snaps]) => {
     const anyMissing = values.some(v => v === null) || spyNow === null;
     const portfolioValue = anyMissing ? null : values.reduce((sum, v) => sum + v, 0);
 
     if (row) populateLiveRow(portfolioValue, spyNow);
-    if (chartEl) renderGrowthChart(portfolioValue, spyNow);
+    if (chartEl) renderGrowthChart(snaps, portfolioValue, spyNow);
   });
 }
 
@@ -322,13 +342,13 @@ function populateLiveRow(portfolioValue, spyNow) {
 }
 
 // Growth-of-$100: portfolio and SPY both indexed to 100 at the first snapshot.
-function renderGrowthChart(portfolioValue, spyNow) {
+function renderGrowthChart(snaps, portfolioValue, spyNow) {
   const el = document.getElementById("growthChart");
   if (!el) return;
-  if (!SNAPSHOTS.length) { el.textContent = "No snapshots recorded yet."; return; }
+  if (!snaps || !snaps.length) { el.textContent = "No snapshots recorded yet."; return; }
 
-  const base = SNAPSHOTS[0];
-  const points = SNAPSHOTS.map(s => ({
+  const base = snaps[0];
+  const points = snaps.map(s => ({
     label: s.label,
     port: (s.portfolio / base.portfolio) * 100,
     spy: (s.spy / base.spy) * 100,
