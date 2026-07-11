@@ -76,3 +76,25 @@ const SNAPSHOTS = [
   { label: "Jul 9", portfolio: 102781.80, spy: 751.16 },
   // { label: "Jul 16", portfolio: 0, spy: 0 },
 ];
+
+// Trade journal — every buy/sell with the reasoning behind it, newest first
+// on the page. Append a line per trade; action is "BUY" or "SELL". This is the
+// dated decision record; the holdings page is the current snapshot.
+const TRADES = [
+  { date: "2026-07-09", action: "BUY", symbol: "CMG", shares: 365, price: 35.23,
+    rationale: "The featured research pick and anchor of the book. Entered on the pricing-power-without-discounting thesis from the full equity report; the main risk I flagged going in is decelerating revenue growth." },
+  { date: "2026-07-09", action: "BUY", symbol: "NKE", shares: 290, price: 44.21,
+    rationale: "A turnaround bet on the direct-to-consumer mix shift and inventory reset. Bought knowing China demand is the swing factor and that it needs a couple of quarters to show up in margins." },
+  { date: "2026-07-09", action: "BUY", symbol: "SBUX", shares: 120, price: 104.85,
+    rationale: "The second turnaround bet, paired with NKE. Entered on the new-leadership store-simplification plan; the thesis hinges on traffic trends stabilizing first." },
+  { date: "2026-07-09", action: "BUY", symbol: "MCD", shares: 46, price: 274.57,
+    rationale: "Bought deliberately as the mature comp for CMG and SBUX — a benchmark to judge whether the turnaround names are actually outperforming or just moving with the category." },
+  { date: "2026-07-09", action: "BUY", symbol: "AAPL", shares: 43, price: 306.45,
+    rationale: "The large-cap stability anchor. Entered for the services-margin story and to dampen the swings from the turnaround positions, not for a near-term catalyst." },
+  { date: "2026-07-09", action: "BUY", symbol: "COST", shares: 14, price: 941.03,
+    rationale: "The 'boring compounder.' Bought for membership-renewal stability; noted at entry that the high share price made it feel riskier than the business actually is." },
+  { date: "2026-07-09", action: "BUY", symbol: "V", shares: 36, price: 358.46,
+    rationale: "A bet on the secular shift away from cash — toll-booth economics on payment volume with very little direct credit risk." },
+  { date: "2026-07-09", action: "BUY", symbol: "DIS", shares: 130, price: 97.18,
+    rationale: "The highest-conviction, highest-risk pick. Bought on the streaming-profitability inflection plus parks pricing power, aware it's the hardest of the eight to model cleanly." },
+];

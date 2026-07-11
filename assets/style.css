@@ -365,6 +365,60 @@ table.breakdown tfoot td {
 .news-item:hover .news-headline { color: var(--brass); }
 .news-meta { font-family: var(--mono); font-size: 12px; color: var(--text-lo); }
 
+/* ---------- Trade journal ---------- */
+.journal-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin: 20px 0 34px;
+  font-family: var(--mono);
+}
+.journal-stats .stat .k {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 4px;
+}
+.journal-stats .stat .v { font-size: 20px; color: var(--text-hi); }
+.trade {
+  background: var(--ink-soft);
+  border: var(--rule);
+  border-left: 3px solid var(--brass);
+  border-radius: var(--radius);
+  padding: 15px 18px;
+  margin-bottom: 12px;
+}
+.trade.buy  { border-left-color: var(--gain); }
+.trade.sell { border-left-color: var(--loss); }
+.trade__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.trade__action {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: var(--radius);
+}
+.trade__action.buy  { color: var(--gain); border-color: var(--gain); }
+.trade__action.sell { color: var(--loss); border-color: var(--loss); }
+.trade__symbol {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--brass);
+  text-decoration: none;
+}
+.trade__symbol:hover { text-decoration: underline; }
+.trade__detail { font-family: var(--mono); font-size: 13px; color: var(--text-lo); }
+.trade__why { margin: 0; color: var(--text-hi); font-size: 15px; }
+
 /* ---------- Live price tracker ---------- */
 .live-summary {
   font-family: var(--mono);

@@ -389,6 +389,72 @@ function renderGrowthChart(portfolioValue, spyNow) {
     <p class="chart-note">Growth of $100 invested on ${base.label}. Both lines start at 100; the “Now” point updates live on each page load.</p>`;
 }
 
+// ---------- Trade journal ----------
+
+const MONTHS = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
+
+// Format a "YYYY-MM-DD" string without going through Date() (avoids timezone
+// shifting the day).
+function formatTradeDate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+function initJournal() {
+  const el = document.getElementById("journal");
+  if (!el) return;
+
+  if (typeof TRADES === "undefined" || !TRADES.length) {
+    el.innerHTML = `<p class="post-body" style="color:var(--text-lo)">No trades recorded yet.</p>`;
+    const statsEmpty = document.getElementById("journalStats");
+    if (statsEmpty) statsEmpty.innerHTML = "";
+    return;
+  }
+
+  // Summary stats.
+  const statsEl = document.getElementById("journalStats");
+  if (statsEl) {
+    const buys = TRADES.filter(t => t.action === "BUY");
+    const sells = TRADES.filter(t => t.action === "SELL");
+    const invested = buys.reduce((sum, t) => sum + t.shares * t.price, 0);
+    const proceeds = sells.reduce((sum, t) => sum + t.shares * t.price, 0);
+    const opened = TRADES.reduce((min, t) => (t.date < min ? t.date : min), TRADES[0].date);
+    const net = invested - proceeds;
+    statsEl.innerHTML = `
+      <div class="stat"><div class="k">Trades Logged</div><div class="v">${TRADES.length}</div></div>
+      <div class="stat"><div class="k">Net Invested</div><div class="v">${fmtUSD(net)}</div></div>
+      <div class="stat"><div class="k">Buys / Sells</div><div class="v">${buys.length} / ${sells.length}</div></div>
+      <div class="stat"><div class="k">Opened</div><div class="v">${formatTradeDate(opened)}</div></div>`;
+  }
+
+  // Group trades by date, newest date first; keep entry order within a date.
+  const byDate = {};
+  const order = [];
+  TRADES.forEach(t => {
+    if (!byDate[t.date]) { byDate[t.date] = []; order.push(t.date); }
+    byDate[t.date].push(t);
+  });
+  order.sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
+
+  el.innerHTML = order.map(date => {
+    const rows = byDate[date].map(t => {
+      const cls = t.action === "SELL" ? "sell" : "buy";
+      const total = t.shares * t.price;
+      return `
+        <div class="trade ${cls}">
+          <div class="trade__head">
+            <span class="trade__action ${cls}">${t.action}</span>
+            <a class="trade__symbol" href="holdings/stock.html?symbol=${t.symbol}">${t.symbol}</a>
+            <span class="trade__detail">${t.shares} sh @ ${fmtUSD(t.price)} = ${fmtUSD(total)}</span>
+          </div>
+          <p class="trade__why">${escapeHtml(t.rationale)}</p>
+        </div>`;
+    }).join("");
+    return `<p class="section-label">${formatTradeDate(date)}</p>${rows}`;
+  }).join("");
+}
+
 // ---------- Per-stock detail page ----------
 
 function initStockDetail() {
@@ -475,4 +541,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initHoldingsPage();
   initPerformancePage();
   initStockDetail();
+  initJournal();
 });
