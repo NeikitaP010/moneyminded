@@ -610,6 +610,8 @@ function initDividends() {
   const body = document.getElementById("dividendsBody");
   if (!body) return;
 
+  renderReceivedDividends();
+
   const symbols = Object.keys(STOCKS);
   Promise.all(
     symbols.map(s => fetchMetric(s).then(m => ({ s, m })).catch(() => ({ s, m: {} })))
@@ -679,6 +681,38 @@ function renderDividends(metrics) {
       <div class="stat"><div class="k">Portfolio Yield on Cost</div><div class="v">${pct(yocTotal)}</div></div>
       <div class="stat"><div class="k">Dividend Payers</div><div class="v">${payers} of ${Object.keys(STOCKS).length}</div></div>`;
   }
+}
+
+// Actual dividends received to date (from the DIVIDENDS log), newest first,
+// with a running total. Renders regardless of the live API.
+function renderReceivedDividends() {
+  const el = document.getElementById("dividendsReceived");
+  if (!el) return;
+  const list = typeof DIVIDENDS !== "undefined" ? DIVIDENDS : [];
+  const total = list.reduce((sum, d) => sum + d.shares * d.perShare, 0);
+
+  const totalEl = document.getElementById("receivedTotal");
+  if (totalEl) totalEl.textContent = fmtUSD(total);
+
+  if (!list.length) {
+    el.innerHTML = `<p class="post-body" style="color:var(--text-lo); font-size:14px;">No dividends received yet — the first payments will appear here as pay dates pass. Positions opened Jul 9, 2026.</p>`;
+    return;
+  }
+
+  const sorted = [...list].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  const rows = sorted.map(d => `<tr>
+      <td>${formatTradeDate(d.date)}</td>
+      <td><a href="../holdings/stock.html?symbol=${d.symbol}">${d.symbol}</a></td>
+      <td class="num">${d.shares}</td>
+      <td class="num">${fmtUSD(d.perShare)}</td>
+      <td class="num pos">${fmtUSD(d.shares * d.perShare)}</td>
+    </tr>`).join("");
+
+  el.innerHTML = `<div class="table-scroll"><table class="ledger-table">
+      <thead><tr><th>Pay Date</th><th>Ticker</th><th class="num">Shares</th><th class="num">Per Share</th><th class="num">Amount</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>Total</td><td></td><td class="num"></td><td class="num"></td><td class="num pos">${fmtUSD(total)}</td></tr></tfoot>
+    </table></div>`;
 }
 
 // ---------- Rebalance / trade tool ----------
