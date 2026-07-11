@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dividends — Portfolio &amp; Analysis · moneyminded</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs">
+    <a href="../../index.html">moneyminded</a> /
+    <a href="../index.html">project-1-portfolio</a> / dividends
+  </nav>
+
+  <header class="masthead" style="padding-top:20px; border-bottom:none;">
+    <p class="eyebrow">Income</p>
+    <h1 class="title" style="font-size:clamp(28px,5vw,42px);">Dividend Income</h1>
+    <p class="tagline">The income leg of the book. Estimated annual income is the current indicated dividend per share times shares held; yield on cost is that income measured against what I paid — the number that quietly climbs as companies raise their payouts.</p>
+  </header>
+
+  <div id="divStats" class="journal-stats">
+    <div class="stat"><div class="k">Est. Annual Income</div><div class="v"><span class="skeleton skeleton--sm"></span></div></div>
+    <div class="stat"><div class="k">Portfolio Yield on Cost</div><div class="v"><span class="skeleton skeleton--sm"></span></div></div>
+    <div class="stat"><div class="k">Dividend Payers</div><div class="v"><span class="skeleton skeleton--sm"></span></div></div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="ledger-table breakdown" id="dividendsTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th class="num">Shares</th>
+          <th class="num">Div / Share</th>
+          <th class="num">Annual Income</th>
+          <th class="num">Cur. Yield</th>
+          <th class="num">Yield on Cost</th>
+          <th class="num">5Y Div Growth</th>
+        </tr>
+      </thead>
+      <tbody id="dividendsBody">
+        <tr><td><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td></tr>
+        <tr><td><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td></tr>
+        <tr><td><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td><td class="num"><span class="skeleton skeleton--sm"></span></td></tr>
+      </tbody>
+      <tfoot id="dividendsFoot"></tfoot>
+    </table>
+  </div>
+
+  <p class="post-body" style="color:var(--text-lo); font-size:13px; margin-top:-24px;">
+    Figures are live from Finnhub's basic financials and are an estimate of
+    forward income based on the current indicated dividend — not actual cash
+    received (dividends pay quarterly). CMG pays no dividend. A "—" means the
+    field isn't available on the free tier for that name.
+  </p>
+
+  <footer>
+    <span><a href="../index.html">← Back to Project 1</a></span>
+    <span><a href="../holdings/index.html">View holdings →</a></span>
+  </footer>
+</div>
+
+<script src="../../assets/portfolio-data.js"></script>
+<script src="../../assets/live-quotes.js"></script>
+</body>
+</html>

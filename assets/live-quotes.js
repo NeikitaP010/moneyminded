@@ -601,6 +601,86 @@ function escapeHtml(str) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+// ---------- Dividend tracker ----------
+// Estimated forward income from the current indicated annual dividend per
+// share (live from Finnhub basic financials) × shares held. Yield on cost is
+// that income over what was paid for the position.
+
+function initDividends() {
+  const body = document.getElementById("dividendsBody");
+  if (!body) return;
+
+  const symbols = Object.keys(STOCKS);
+  Promise.all(
+    symbols.map(s => fetchMetric(s).then(m => ({ s, m })).catch(() => ({ s, m: {} })))
+  ).then(results => {
+    const metrics = {};
+    results.forEach(r => { metrics[r.s] = r.m; });
+    renderDividends(metrics);
+  });
+}
+
+function renderDividends(metrics) {
+  const body = document.getElementById("dividendsBody");
+  const foot = document.getElementById("dividendsFoot");
+  const statsEl = document.getElementById("divStats");
+  if (!body) return;
+
+  const pct = n => `${n.toFixed(2)}%`;
+  let totalIncome = 0;
+  let payers = 0;
+
+  const rows = Object.entries(STOCKS).map(([sym, s]) => {
+    const m = metrics[sym] || {};
+    const dps = typeof m.dividendPerShareAnnual === "number" ? m.dividendPerShareAnnual : null;
+    if (dps === null) {
+      return `<tr>
+        <td><a href="../holdings/stock.html?symbol=${sym}">${sym}</a></td>
+        <td class="num">${s.shares}</td>
+        <td class="num" colspan="5" style="color:var(--text-lo)">No dividend</td>
+      </tr>`;
+    }
+    payers++;
+    const income = dps * s.shares;
+    totalIncome += income;
+    const curYield = typeof m.dividendYieldIndicatedAnnual === "number" ? pct(m.dividendYieldIndicatedAnnual) : "—";
+    const yoc = pct((income / s.cost) * 100);
+    const growth = typeof m.dividendGrowthRate5Y === "number" ? pct(m.dividendGrowthRate5Y) : "—";
+    return `<tr>
+      <td><a href="../holdings/stock.html?symbol=${sym}">${sym}</a></td>
+      <td class="num">${s.shares}</td>
+      <td class="num">${fmtUSD(dps)}</td>
+      <td class="num">${fmtUSD(income)}</td>
+      <td class="num">${curYield}</td>
+      <td class="num pos">${yoc}</td>
+      <td class="num">${growth}</td>
+    </tr>`;
+  });
+
+  body.innerHTML = rows.join("");
+
+  if (foot) {
+    const yocTotal = (totalIncome / BASELINE_TOTAL) * 100;
+    foot.innerHTML = `<tr>
+      <td>Total</td>
+      <td class="num"></td>
+      <td class="num"></td>
+      <td class="num">${fmtUSD(totalIncome)}</td>
+      <td class="num"></td>
+      <td class="num pos">${pct(yocTotal)}</td>
+      <td class="num"></td>
+    </tr>`;
+  }
+
+  if (statsEl) {
+    const yocTotal = (totalIncome / BASELINE_TOTAL) * 100;
+    statsEl.innerHTML = `
+      <div class="stat"><div class="k">Est. Annual Income</div><div class="v">${fmtUSD(totalIncome)}</div></div>
+      <div class="stat"><div class="k">Portfolio Yield on Cost</div><div class="v">${pct(yocTotal)}</div></div>
+      <div class="stat"><div class="k">Dividend Payers</div><div class="v">${payers} of ${Object.keys(STOCKS).length}</div></div>`;
+  }
+}
+
 // ---------- Rebalance / trade tool ----------
 // Client-side only: stages trades in localStorage with live cash validation,
 // then exports them to be committed into the canonical data (TRADES + STOCKS).
@@ -797,4 +877,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initJournal();
   initScorecard();
   initTradeTool();
+  initDividends();
 });
