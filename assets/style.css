@@ -232,6 +232,113 @@ table.ledger-table td.num { text-align: right; }
 .pos { color: var(--gain); }
 .neg { color: var(--loss); }
 
+/* ---------- Breakdown table (holdings) ---------- */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.breakdown { min-width: 720px; }
+table.breakdown th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+table.breakdown th.sortable:hover { color: var(--text-hi); }
+table.breakdown th.sorted-asc::after  { content: " ▲"; font-size: 9px; }
+table.breakdown th.sorted-desc::after { content: " ▼"; font-size: 9px; }
+table.breakdown td a { color: var(--brass); text-decoration: none; font-weight: 600; }
+table.breakdown td a:hover { text-decoration: underline; }
+table.breakdown tfoot td {
+  border-top: 2px solid var(--brass-dim);
+  border-bottom: none;
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+/* ---------- Allocation bars ---------- */
+.alloc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin: 20px 0 40px;
+}
+@media (max-width: 640px) { .alloc-grid { grid-template-columns: 1fr; } }
+.alloc-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin: 0 0 14px;
+}
+.alloc-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.alloc-label { color: var(--text-hi); }
+.alloc-track {
+  background: rgba(201,154,58,0.12);
+  border-radius: 2px;
+  height: 12px;
+  overflow: hidden;
+}
+.alloc-fill { display: block; height: 100%; background: var(--brass); }
+.alloc-pct { text-align: right; color: var(--text-lo); }
+
+/* ---------- Growth chart ---------- */
+.chart { margin: 20px 0 32px; }
+.chart-svg { width: 100%; height: auto; display: block; }
+.chart-axis { fill: var(--text-lo); font-family: var(--mono); font-size: 11px; }
+.chart-note { font-family: var(--body); font-size: 13px; color: var(--text-lo); margin: 8px 0 0; }
+
+/* ---------- Stock detail page ---------- */
+.sd-quote {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.sd-quote .k {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 4px;
+}
+.sd-quote .v { font-family: var(--mono); font-size: 22px; }
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin: 16px 0 36px;
+}
+.metric {
+  background: var(--ink-soft);
+  border: var(--rule);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.metric .k {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 6px;
+}
+.metric .v { font-family: var(--mono); font-size: 18px; }
+.news-list { display: flex; flex-direction: column; gap: 2px; margin: 16px 0 36px; }
+.news-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(201,154,58,0.18);
+  text-decoration: none;
+}
+.news-headline { color: var(--text-hi); font-size: 15px; }
+.news-item:hover .news-headline { color: var(--brass); }
+.news-meta { font-family: var(--mono); font-size: 12px; color: var(--text-lo); }
+
 /* ---------- Live price tracker ---------- */
 .live-summary {
   font-family: var(--mono);

@@ -26,12 +26,56 @@
     <div id="liveTotalGain"></div>
   </div>
 
+  <p class="section-label">Position Breakdown</p>
+  <div class="table-scroll">
+    <table class="ledger-table breakdown" id="breakdownTable">
+      <thead>
+        <tr>
+          <th data-key="symbol">Ticker</th>
+          <th class="num" data-key="shares">Shares</th>
+          <th class="num" data-key="buy">Buy</th>
+          <th class="num" data-key="cost">Cost Basis</th>
+          <th class="num" data-key="last">Last</th>
+          <th class="num" data-key="value">Mkt Value</th>
+          <th class="num" data-key="todayDollar">Today $</th>
+          <th class="num" data-key="todayPct">Today %</th>
+          <th class="num" data-key="totalDollar">Total $</th>
+          <th class="num" data-key="totalPct">Total %</th>
+          <th class="num" data-key="weight">Weight</th>
+        </tr>
+      </thead>
+      <tbody id="breakdownBody">
+        <tr><td colspan="11">Fetching live prices…</td></tr>
+      </tbody>
+      <tfoot id="breakdownFoot"></tfoot>
+    </table>
+  </div>
+  <p class="post-body" style="color:var(--text-lo); font-size:13px; margin-top:-24px;">
+    Click any column header to sort. Today's figures use each stock's intraday
+    change; totals roll up the whole book. Tap a ticker for its detail page.
+  </p>
+
+  <p class="section-label">Allocation</p>
+  <div class="alloc-grid">
+    <div class="alloc-block">
+      <h3 class="alloc-title">By Position</h3>
+      <div id="allocPositions" class="alloc-bars">Fetching…</div>
+    </div>
+    <div class="alloc-block">
+      <h3 class="alloc-title">By Sector</h3>
+      <div id="allocSectors" class="alloc-bars">Fetching…</div>
+    </div>
+  </div>
+
+  <p class="section-label">The Theses</p>
+
   <div class="card">
     <div class="meta">CMG — Chipotle Mexican Grill · Featured research pick</div>
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">365 sh @ $35.23 = $12,858.95</p>
     <p class="live-quote" data-symbol="CMG" data-shares="365" data-cost="12858.95">Fetching live price…</p>
     <h3>The full valuation report</h3>
     <p>New store throughput (Chipotlanes) and pricing power without discounting keep unit economics ahead of the rest of fast casual. Full equity research report and DCF live in the report PDF, linked from the July entry.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=CMG" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -39,6 +83,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">290 sh @ $44.21 = $12,820.90</p>
     <p class="live-quote" data-symbol="NKE" data-shares="290" data-cost="12820.90">Fetching live price…</p>
     <p>Direct-to-consumer mix shift and inventory normalization set up a margin recovery story. China demand is the main swing factor to watch.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=NKE" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -46,6 +91,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">120 sh @ $104.85 = $12,582.00</p>
     <p class="live-quote" data-symbol="SBUX" data-shares="120" data-cost="12582.00">Fetching live price…</p>
     <p>New leadership's turnaround plan — store simplification, faster throughput — is a real re-rating case if it works, but traffic trends have to stop slipping first.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=SBUX" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -53,6 +99,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">46 sh @ $274.57 = $12,630.22</p>
     <p class="live-quote" data-symbol="MCD" data-shares="46" data-cost="12630.22">Fetching live price…</p>
     <p>Held as the comp for CMG and SBUX: a mature, franchise-heavy model that's a useful benchmark for unit economics and margin structure.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=MCD" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -60,6 +107,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">43 sh @ $306.45 = $13,177.35</p>
     <p class="live-quote" data-symbol="AAPL" data-shares="43" data-cost="13177.35">Fetching live price…</p>
     <p>Services keep expanding operating margin even as hardware growth flattens. The large-cap anchor of the book — held for stability more than upside.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=AAPL" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -67,6 +115,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">14 sh @ $941.03 = $13,174.42</p>
     <p class="live-quote" data-symbol="COST" data-shares="14" data-cost="13174.42">Fetching live price…</p>
     <p>Membership renewal rates and steady comps make this the "boring compounder" position — low drama, consistent execution.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=COST" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -74,6 +123,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">36 sh @ $358.46 = $12,904.56</p>
     <p class="live-quote" data-symbol="V" data-shares="36" data-cost="12904.56">Fetching live price…</p>
     <p>Network-effect economics on payments volume, with very little direct credit risk. A bet on the continued shift away from cash generally.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=V" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <div class="card">
@@ -81,6 +131,7 @@
     <p style="color:var(--text-lo); font-size:13px; margin:2px 0 10px;">130 sh @ $97.18 = $12,633.40</p>
     <p class="live-quote" data-symbol="DIS" data-shares="130" data-cost="12633.40">Fetching live price…</p>
     <p>Streaming profitability inflection plus parks pricing power make the bull case, but content spend cycles and segment complexity are real risks.</p>
+    <p style="margin-top:10px;"><a href="stock.html?symbol=DIS" style="color:var(--brass); text-decoration:none; font-family:var(--mono); font-size:13px;">Full detail →</a></p>
   </div>
 
   <p class="post-body" style="color:var(--text-lo); font-size:14px; margin-top: 10px;">
@@ -95,6 +146,7 @@
   </footer>
 </div>
 
+<script src="../../assets/portfolio-data.js"></script>
 <script src="../../assets/live-quotes.js"></script>
 </body>
 </html>

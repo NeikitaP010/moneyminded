@@ -1,136 +1,478 @@
-// Live quotes via the Finnhub free /quote endpoint (read-only, current price
-// only). TODO: if this site gets real traffic, move the key behind a small
+// Live quotes via the Finnhub free API (read-only). Depends on the globals
+// defined in portfolio-data.js (STOCKS, POSITIONS, BASELINE_TOTAL,
+// SPY_BASELINE, SNAPSHOTS), so that file must be loaded first.
+//
+// TODO: if this site gets real traffic, move the key behind a small
 // server-side proxy or env var instead of shipping it in client-side JS —
 // fine for now since it's a free, read-only key on a low-traffic personal
 // project, but it is visible to anyone who views source.
 const FINNHUB_API_KEY = "d982uu9r01qng2nqb2v0d982uu9r01qng2nqb2vg";
 
-const POSITIONS = [
-  { symbol: "CMG",  shares: 365, cost: 12858.95 },
-  { symbol: "NKE",  shares: 290, cost: 12820.90 },
-  { symbol: "SBUX", shares: 120, cost: 12582.00 },
-  { symbol: "MCD",  shares: 46,  cost: 12630.22 },
-  { symbol: "AAPL", shares: 43,  cost: 13177.35 },
-  { symbol: "COST", shares: 14,  cost: 13174.42 },
-  { symbol: "V",    shares: 36,  cost: 12904.56 },
-  { symbol: "DIS",  shares: 130, cost: 12633.40 },
-];
+const FINNHUB_BASE = "https://finnhub.io/api/v1";
 
-const BASELINE_TOTAL = 102781.80;
-const SPY_BASELINE = 751.16;
+// ---------- Fetch helpers ----------
 
+// Returns the full quote object: c (current), d (day $ change),
+// dp (day % change), pc (previous close), o/h/l, t (timestamp).
 function fetchQuote(symbol) {
-  const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
+  const url = `${FINNHUB_BASE}/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
   return fetch(url)
     .then(res => {
-      if (!res.ok) throw new Error(`Finnhub request failed for ${symbol}: ${res.status}`);
+      if (!res.ok) throw new Error(`Quote request failed for ${symbol}: ${res.status}`);
       return res.json();
     })
     .then(data => {
       if (typeof data.c !== "number" || data.c === 0) throw new Error(`No live price for ${symbol}`);
-      return data.c;
+      return data;
     });
 }
 
+// Basic financials (P/E, margins, 52-week range, beta, market cap, etc.).
+// Some fields may be absent on the free tier — callers should tolerate nulls.
+function fetchMetric(symbol) {
+  const url = `${FINNHUB_BASE}/stock/metric?symbol=${encodeURIComponent(symbol)}&metric=all&token=${FINNHUB_API_KEY}`;
+  return fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error(`Metric request failed for ${symbol}: ${res.status}`);
+      return res.json();
+    })
+    .then(data => data.metric || {});
+}
+
+// Recent company news over the trailing two weeks.
+function fetchNews(symbol) {
+  const to = new Date();
+  const from = new Date(to.getTime() - 14 * 24 * 3600 * 1000);
+  const fmt = d => d.toISOString().slice(0, 10);
+  const url = `${FINNHUB_BASE}/company-news?symbol=${encodeURIComponent(symbol)}&from=${fmt(from)}&to=${fmt(to)}&token=${FINNHUB_API_KEY}`;
+  return fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error(`News request failed for ${symbol}: ${res.status}`);
+      return res.json();
+    })
+    .then(data => (Array.isArray(data) ? data : []));
+}
+
+// ---------- Formatters ----------
+
 function fmtUSD(n) {
-  return n.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtPct(n) { return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`; }
+function fmtSigned(n) { return `${n >= 0 ? "+" : ""}${fmtUSD(n)}`; }
+function signClass(n) { return n >= 0 ? "pos" : "neg"; }
+
+// ---------- Holdings page ----------
+
+function initHoldingsPage() {
+  const hasCards = document.querySelector(".live-quote");
+  const hasTable = document.getElementById("breakdownBody");
+  const hasAlloc = document.getElementById("allocPositions");
+  if (!hasCards && !hasTable && !hasAlloc) return;
+
+  const symbols = Object.keys(STOCKS);
+  Promise.all(
+    symbols.map(s => fetchQuote(s).then(q => ({ s, q })).catch(() => ({ s, q: null })))
+  ).then(results => {
+    const quotes = {};
+    results.forEach(r => { quotes[r.s] = r.q; });
+    populateCardQuotes(quotes);
+    populateSummary(quotes);
+    renderBreakdownTable(quotes);
+    renderAllocation(quotes);
   });
 }
 
-function fmtPct(n) {
-  return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
-}
-
-function fmtSigned(n) {
-  return `${n >= 0 ? "+" : ""}${fmtUSD(n)}`;
-}
-
-function initHoldingsLiveData() {
-  const quoteEls = document.querySelectorAll(".live-quote");
-  if (!quoteEls.length) return;
-
-  const valuePromises = Array.from(quoteEls).map(el => {
+function populateCardQuotes(quotes) {
+  document.querySelectorAll(".live-quote").forEach(el => {
     const symbol = el.dataset.symbol;
-    const shares = parseFloat(el.dataset.shares);
-    const cost = parseFloat(el.dataset.cost);
-    return fetchQuote(symbol)
-      .then(price => {
-        const value = price * shares;
-        const gain = value - cost;
-        const gainPct = (gain / cost) * 100;
-        el.textContent = `Now: ${fmtUSD(price)} · ${fmtSigned(gain)} (${fmtPct(gainPct)})`;
-        el.classList.add(gain >= 0 ? "pos" : "neg");
-        return value;
-      })
-      .catch(() => {
-        el.textContent = "unable to load live data";
-        return null;
-      });
+    const q = quotes[symbol];
+    if (!q) { el.textContent = "unable to load live data"; return; }
+    el.textContent = `Now: ${fmtUSD(q.c)} · ${fmtSigned(q.d)} (${fmtPct(q.dp)}) today`;
+    el.classList.add(signClass(q.d));
   });
+}
 
+function populateSummary(quotes) {
   const totalEl = document.getElementById("liveTotalValue");
   const gainEl = document.getElementById("liveTotalGain");
   if (!totalEl || !gainEl) return;
 
-  Promise.all(valuePromises).then(values => {
-    if (values.some(v => v === null)) {
-      totalEl.textContent = "unable to load live data";
-      gainEl.textContent = "";
-      return;
+  const symbols = Object.keys(STOCKS);
+  if (symbols.some(s => !quotes[s])) {
+    totalEl.textContent = "unable to load live data";
+    gainEl.textContent = "";
+    return;
+  }
+  const total = symbols.reduce((sum, s) => sum + quotes[s].c * STOCKS[s].shares, 0);
+  const dayChange = symbols.reduce((sum, s) => sum + quotes[s].d * STOCKS[s].shares, 0);
+  const gain = total - BASELINE_TOTAL;
+  const gainPct = (gain / BASELINE_TOTAL) * 100;
+  const dayPct = (dayChange / (total - dayChange)) * 100;
+
+  totalEl.textContent = fmtUSD(total);
+  gainEl.innerHTML =
+    `<span class="${signClass(gain)}">${fmtSigned(gain)} (${fmtPct(gainPct)})</span> all-time` +
+    ` &nbsp;·&nbsp; <span class="${signClass(dayChange)}">${fmtSigned(dayChange)} (${fmtPct(dayPct)})</span> today`;
+}
+
+// --- Sortable breakdown table ---
+
+let breakdownRows = [];
+let breakdownSort = { key: "value", dir: "desc" };
+
+function renderBreakdownTable(quotes) {
+  const body = document.getElementById("breakdownBody");
+  const foot = document.getElementById("breakdownFoot");
+  if (!body) return;
+
+  const totalValue = Object.keys(STOCKS)
+    .reduce((sum, s) => sum + (quotes[s] ? quotes[s].c * STOCKS[s].shares : 0), 0);
+
+  breakdownRows = Object.entries(STOCKS).map(([symbol, s]) => {
+    const q = quotes[symbol];
+    if (!q) {
+      return { symbol, shares: s.shares, buy: s.buy, cost: s.cost,
+        last: null, value: null, todayDollar: null, todayPct: null,
+        totalDollar: null, totalPct: null, weight: null };
     }
-    const total = values.reduce((sum, v) => sum + v, 0);
-    const gain = total - BASELINE_TOTAL;
-    const gainPct = (gain / BASELINE_TOTAL) * 100;
-    totalEl.textContent = fmtUSD(total);
-    gainEl.textContent = `${fmtSigned(gain)} (${fmtPct(gainPct)})`;
-    gainEl.classList.add(gain >= 0 ? "pos" : "neg");
+    const value = q.c * s.shares;
+    const todayDollar = q.d * s.shares;
+    const totalDollar = value - s.cost;
+    return {
+      symbol, shares: s.shares, buy: s.buy, cost: s.cost,
+      last: q.c, value, todayDollar, todayPct: q.dp,
+      totalDollar, totalPct: (totalDollar / s.cost) * 100,
+      weight: totalValue ? (value / totalValue) * 100 : null,
+    };
+  });
+
+  // Header click-to-sort.
+  document.querySelectorAll("#breakdownTable thead th[data-key]").forEach(th => {
+    if (th.dataset.bound) return;
+    th.dataset.bound = "1";
+    th.classList.add("sortable");
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      if (breakdownSort.key === key) {
+        breakdownSort.dir = breakdownSort.dir === "asc" ? "desc" : "asc";
+      } else {
+        breakdownSort = { key, dir: key === "symbol" ? "asc" : "desc" };
+      }
+      drawBreakdownBody();
+    });
+  });
+
+  drawBreakdownBody();
+
+  // Totals row (unaffected by sort).
+  if (foot) {
+    const anyMissing = Object.keys(STOCKS).some(s => !quotes[s]);
+    const totalCost = BASELINE_TOTAL;
+    const totalDay = Object.keys(STOCKS).reduce((sum, s) => sum + (quotes[s] ? quotes[s].d * STOCKS[s].shares : 0), 0);
+    const totalGain = totalValue - totalCost;
+    const dayBasis = totalValue - totalDay;
+    const cells = anyMissing
+      ? `<td colspan="11">Totals unavailable — some live prices didn't load</td>`
+      : [
+          `<td>Total</td>`,
+          `<td class="num"></td>`,
+          `<td class="num"></td>`,
+          `<td class="num">${fmtUSD(totalCost)}</td>`,
+          `<td class="num"></td>`,
+          `<td class="num">${fmtUSD(totalValue)}</td>`,
+          `<td class="num ${signClass(totalDay)}">${fmtSigned(totalDay)}</td>`,
+          `<td class="num ${signClass(totalDay)}">${fmtPct((totalDay / dayBasis) * 100)}</td>`,
+          `<td class="num ${signClass(totalGain)}">${fmtSigned(totalGain)}</td>`,
+          `<td class="num ${signClass(totalGain)}">${fmtPct((totalGain / totalCost) * 100)}</td>`,
+          `<td class="num">100%</td>`,
+        ].join("");
+    foot.innerHTML = `<tr>${cells}</tr>`;
+  }
+}
+
+function drawBreakdownBody() {
+  const body = document.getElementById("breakdownBody");
+  if (!body) return;
+  const { key, dir } = breakdownSort;
+  const sorted = [...breakdownRows].sort((a, b) => {
+    let av = a[key], bv = b[key];
+    if (av === null) return 1;      // missing data always sinks to the bottom
+    if (bv === null) return -1;
+    if (typeof av === "string") return dir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+    return dir === "asc" ? av - bv : bv - av;
+  });
+
+  body.innerHTML = sorted.map(r => {
+    if (r.last === null) {
+      return `<tr>
+        <td><a href="stock.html?symbol=${r.symbol}">${r.symbol}</a></td>
+        <td class="num">${r.shares}</td>
+        <td class="num">${fmtUSD(r.buy)}</td>
+        <td class="num">${fmtUSD(r.cost)}</td>
+        <td class="num" colspan="7">unable to load live data</td>
+      </tr>`;
+    }
+    return `<tr>
+      <td><a href="stock.html?symbol=${r.symbol}">${r.symbol}</a></td>
+      <td class="num">${r.shares}</td>
+      <td class="num">${fmtUSD(r.buy)}</td>
+      <td class="num">${fmtUSD(r.cost)}</td>
+      <td class="num">${fmtUSD(r.last)}</td>
+      <td class="num">${fmtUSD(r.value)}</td>
+      <td class="num ${signClass(r.todayDollar)}">${fmtSigned(r.todayDollar)}</td>
+      <td class="num ${signClass(r.todayPct)}">${fmtPct(r.todayPct)}</td>
+      <td class="num ${signClass(r.totalDollar)}">${fmtSigned(r.totalDollar)}</td>
+      <td class="num ${signClass(r.totalPct)}">${fmtPct(r.totalPct)}</td>
+      <td class="num">${r.weight.toFixed(1)}%</td>
+    </tr>`;
+  }).join("");
+
+  document.querySelectorAll("#breakdownTable thead th[data-key]").forEach(th => {
+    th.classList.toggle("sorted-asc", th.dataset.key === key && dir === "asc");
+    th.classList.toggle("sorted-desc", th.dataset.key === key && dir === "desc");
   });
 }
 
-function initPerformanceLiveRow() {
-  const row = document.getElementById("liveRow");
-  if (!row) return;
+// --- Allocation bars (by position and by sector) ---
 
-  const valueEl = document.getElementById("liveValue");
-  const portReturnEl = document.getElementById("livePortfolioReturn");
-  const spxReturnEl = document.getElementById("liveSpxReturn");
-  const deltaEl = document.getElementById("liveDelta");
+function renderAllocation(quotes) {
+  const posEl = document.getElementById("allocPositions");
+  const secEl = document.getElementById("allocSectors");
+  if (!posEl && !secEl) return;
 
-  const positionValues = Promise.all(
-    POSITIONS.map(p => fetchQuote(p.symbol).then(price => price * p.shares))
-  );
-  const spyPrice = fetchQuote("SPY");
+  const symbols = Object.keys(STOCKS);
+  if (symbols.some(s => !quotes[s])) {
+    if (posEl) posEl.textContent = "unable to load live data";
+    if (secEl) secEl.textContent = "unable to load live data";
+    return;
+  }
 
-  Promise.all([positionValues, spyPrice])
-    .then(([values, spyNow]) => {
-      const portfolioValue = values.reduce((sum, v) => sum + v, 0);
-      const portfolioReturn = ((portfolioValue - BASELINE_TOTAL) / BASELINE_TOTAL) * 100;
-      const spxReturn = ((spyNow - SPY_BASELINE) / SPY_BASELINE) * 100;
-      const delta = portfolioReturn - spxReturn;
+  const values = {};
+  let total = 0;
+  symbols.forEach(s => { values[s] = quotes[s].c * STOCKS[s].shares; total += values[s]; });
 
-      valueEl.textContent = fmtUSD(portfolioValue);
+  if (posEl) {
+    const rows = symbols
+      .map(s => ({ label: s, pct: (values[s] / total) * 100 }))
+      .sort((a, b) => b.pct - a.pct);
+    posEl.innerHTML = allocBars(rows);
+  }
 
-      portReturnEl.textContent = fmtPct(portfolioReturn);
-      portReturnEl.classList.add(portfolioReturn >= 0 ? "pos" : "neg");
-
-      spxReturnEl.textContent = fmtPct(spxReturn);
-      spxReturnEl.classList.add(spxReturn >= 0 ? "pos" : "neg");
-
-      deltaEl.textContent = fmtPct(delta);
-      deltaEl.classList.add(delta >= 0 ? "pos" : "neg");
-    })
-    .catch(() => {
-      [valueEl, portReturnEl, spxReturnEl, deltaEl].forEach(el => {
-        el.textContent = "unable to load live data";
-      });
+  if (secEl) {
+    const bySector = {};
+    symbols.forEach(s => {
+      const sec = STOCKS[s].sector;
+      bySector[sec] = (bySector[sec] || 0) + values[s];
     });
+    const rows = Object.entries(bySector)
+      .map(([label, v]) => ({ label, pct: (v / total) * 100 }))
+      .sort((a, b) => b.pct - a.pct);
+    secEl.innerHTML = allocBars(rows);
+  }
 }
 
+function allocBars(rows) {
+  return rows.map(r => `
+    <div class="alloc-row">
+      <span class="alloc-label">${r.label}</span>
+      <span class="alloc-track"><span class="alloc-fill" style="width:${r.pct.toFixed(1)}%"></span></span>
+      <span class="alloc-pct">${r.pct.toFixed(1)}%</span>
+    </div>`).join("");
+}
+
+// ---------- Performance page (live row + growth chart) ----------
+
+function initPerformancePage() {
+  const row = document.getElementById("liveRow");
+  const chartEl = document.getElementById("growthChart");
+  if (!row && !chartEl) return;
+
+  const symbols = Object.keys(STOCKS);
+  Promise.all([
+    Promise.all(symbols.map(s => fetchQuote(s).then(q => q.c * STOCKS[s].shares).catch(() => null))),
+    fetchQuote("SPY").then(q => q.c).catch(() => null),
+  ]).then(([values, spyNow]) => {
+    const anyMissing = values.some(v => v === null) || spyNow === null;
+    const portfolioValue = anyMissing ? null : values.reduce((sum, v) => sum + v, 0);
+
+    if (row) populateLiveRow(portfolioValue, spyNow);
+    if (chartEl) renderGrowthChart(portfolioValue, spyNow);
+  });
+}
+
+function populateLiveRow(portfolioValue, spyNow) {
+  const valueEl = document.getElementById("liveValue");
+  const portEl = document.getElementById("livePortfolioReturn");
+  const spxEl = document.getElementById("liveSpxReturn");
+  const deltaEl = document.getElementById("liveDelta");
+
+  if (portfolioValue === null || spyNow === null) {
+    [valueEl, portEl, spxEl, deltaEl].forEach(el => { if (el) el.textContent = "unable to load live data"; });
+    return;
+  }
+  const portReturn = ((portfolioValue - BASELINE_TOTAL) / BASELINE_TOTAL) * 100;
+  const spxReturn = ((spyNow - SPY_BASELINE) / SPY_BASELINE) * 100;
+  const delta = portReturn - spxReturn;
+
+  valueEl.textContent = fmtUSD(portfolioValue);
+  portEl.textContent = fmtPct(portReturn); portEl.classList.add(signClass(portReturn));
+  spxEl.textContent = fmtPct(spxReturn); spxEl.classList.add(signClass(spxReturn));
+  deltaEl.textContent = fmtPct(delta); deltaEl.classList.add(signClass(delta));
+}
+
+// Growth-of-$100: portfolio and SPY both indexed to 100 at the first snapshot.
+function renderGrowthChart(portfolioValue, spyNow) {
+  const el = document.getElementById("growthChart");
+  if (!el) return;
+  if (!SNAPSHOTS.length) { el.textContent = "No snapshots recorded yet."; return; }
+
+  const base = SNAPSHOTS[0];
+  const points = SNAPSHOTS.map(s => ({
+    label: s.label,
+    port: (s.portfolio / base.portfolio) * 100,
+    spy: (s.spy / base.spy) * 100,
+  }));
+  if (portfolioValue !== null && spyNow !== null) {
+    points.push({
+      label: "Now",
+      port: (portfolioValue / base.portfolio) * 100,
+      spy: (spyNow / base.spy) * 100,
+    });
+  }
+
+  if (points.length < 2) {
+    el.innerHTML = `<p class="chart-note">Chart fills in as weekly snapshots accumulate — one data point so far. Live prices didn't load, so the “Now” point is hidden.</p>`;
+    return;
+  }
+
+  const W = 820, H = 380, padL = 56, padR = 18, padT = 22, padB = 40;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const all = points.flatMap(p => [p.port, p.spy]);
+  let min = Math.min(...all), max = Math.max(...all);
+  const span = Math.max(max - min, 1);
+  min -= span * 0.12; max += span * 0.12;
+
+  const x = i => padL + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+  const y = v => padT + (1 - (v - min) / (max - min)) * plotH;
+
+  const line = key => points.map((p, i) => `${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
+  const dots = (key, color) => points.map((p, i) =>
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(p[key]).toFixed(1)}" r="3" fill="${color}"/>`).join("");
+
+  // Horizontal gridlines + y labels near the top, middle (100), and bottom.
+  const ticks = [max - (max - min) * 0.1, 100, min + (max - min) * 0.1]
+    .filter((v, i, a) => a.indexOf(v) === i);
+  const grid = ticks.map(v => `
+    <line x1="${padL}" y1="${y(v).toFixed(1)}" x2="${W - padR}" y2="${y(v).toFixed(1)}" stroke="rgba(201,154,58,0.15)"/>
+    <text x="${padL - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end" class="chart-axis">${v.toFixed(1)}</text>`).join("");
+
+  const xLabels = points.map((p, i) =>
+    `<text x="${x(i).toFixed(1)}" y="${H - 14}" text-anchor="middle" class="chart-axis">${p.label}</text>`).join("");
+
+  const PORT = "#c99a3a", SPY = "#a9a693";
+  el.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" class="chart-svg" role="img" aria-label="Portfolio vs S&P 500 growth of $100">
+      ${grid}
+      <polyline fill="none" stroke="${SPY}" stroke-width="2" stroke-dasharray="5 4" points="${line("spy")}"/>
+      <polyline fill="none" stroke="${PORT}" stroke-width="2.5" points="${line("port")}"/>
+      ${dots("spy", SPY)}${dots("port", PORT)}
+      ${xLabels}
+      <g class="chart-legend">
+        <rect x="${padL}" y="${padT - 6}" width="14" height="3" fill="${PORT}"/>
+        <text x="${padL + 20}" y="${padT - 1}" class="chart-axis">Portfolio</text>
+        <rect x="${padL + 96}" y="${padT - 6}" width="14" height="3" fill="${SPY}"/>
+        <text x="${padL + 116}" y="${padT - 1}" class="chart-axis">S&amp;P 500 (SPY)</text>
+      </g>
+    </svg>
+    <p class="chart-note">Growth of $100 invested on ${base.label}. Both lines start at 100; the “Now” point updates live on each page load.</p>`;
+}
+
+// ---------- Per-stock detail page ----------
+
+function initStockDetail() {
+  const root = document.getElementById("stockDetail");
+  if (!root) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const symbol = (params.get("symbol") || "").toUpperCase();
+  const s = STOCKS[symbol];
+
+  if (!s) {
+    root.innerHTML = `<p class="post-body">Unknown ticker. <a href="index.html">Back to holdings →</a></p>`;
+    return;
+  }
+
+  // Static identity from portfolio data.
+  setText("sdName", s.name);
+  setText("sdTicker", symbol);
+  setText("sdSector", s.sector);
+  setText("sdPosition", `${s.shares} sh @ ${fmtUSD(s.buy)} · cost basis ${fmtUSD(s.cost)}`);
+  setText("sdThesis", s.thesis);
+  setText("sdTake", s.take);
+  document.title = `${symbol} — ${s.name} · moneyminded`;
+
+  // Live quote + position P&L.
+  fetchQuote(symbol).then(q => {
+    const value = q.c * s.shares;
+    const totalGain = value - s.cost;
+    setText("sdPrice", fmtUSD(q.c));
+    setSigned("sdDayChange", q.d, `${fmtSigned(q.d)} (${fmtPct(q.dp)}) today`);
+    setText("sdValue", fmtUSD(value));
+    setSigned("sdTotalGain", totalGain, `${fmtSigned(totalGain)} (${fmtPct((totalGain / s.cost) * 100)})`);
+  }).catch(() => {
+    ["sdPrice", "sdDayChange", "sdValue", "sdTotalGain"].forEach(id => setText(id, "unable to load"));
+  });
+
+  // Key metrics.
+  fetchMetric(symbol).then(m => {
+    const hi = m["52WeekHigh"], lo = m["52WeekLow"];
+    setText("mRange", (hi != null && lo != null) ? `${fmtUSD(lo)} – ${fmtUSD(hi)}` : "—");
+    const pe = m.peTTM ?? m.peNormalizedAnnual;
+    setText("mPE", pe != null ? pe.toFixed(1) : "—");
+    setText("mMargin", m.netProfitMarginTTM != null ? `${m.netProfitMarginTTM.toFixed(1)}%` : "—");
+    setText("mBeta", m.beta != null ? m.beta.toFixed(2) : "—");
+    setText("mCap", m.marketCapitalization != null ? `$${(m.marketCapitalization / 1000).toFixed(1)}B` : "—");
+    setText("mYield", m.dividendYieldIndicatedAnnual != null ? `${m.dividendYieldIndicatedAnnual.toFixed(2)}%` : "—");
+  }).catch(() => {
+    ["mRange", "mPE", "mMargin", "mBeta", "mCap", "mYield"].forEach(id => setText(id, "—"));
+  });
+
+  // Recent news.
+  const newsEl = document.getElementById("sdNews");
+  if (newsEl) {
+    fetchNews(symbol).then(items => {
+      if (!items.length) { newsEl.innerHTML = `<p class="post-body" style="color:var(--text-lo)">No recent headlines.</p>`; return; }
+      newsEl.innerHTML = items.slice(0, 5).map(n => {
+        const date = new Date(n.datetime * 1000).toISOString().slice(0, 10);
+        return `<a class="news-item" href="${n.url}" target="_blank" rel="noopener">
+          <span class="news-headline">${escapeHtml(n.headline)}</span>
+          <span class="news-meta">${escapeHtml(n.source || "")} · ${date}</span>
+        </a>`;
+      }).join("");
+    }).catch(() => {
+      newsEl.innerHTML = `<p class="post-body" style="color:var(--text-lo)">Unable to load recent news.</p>`;
+    });
+  }
+}
+
+function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+function setSigned(id, n, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add(signClass(n));
+}
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ---------- Boot ----------
+
 document.addEventListener("DOMContentLoaded", () => {
-  initHoldingsLiveData();
-  initPerformanceLiveRow();
+  initHoldingsPage();
+  initPerformancePage();
+  initStockDetail();
 });
